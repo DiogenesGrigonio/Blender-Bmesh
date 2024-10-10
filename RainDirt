@@ -75,12 +75,12 @@ class BASIC_OT_bmeshRainDirt(bpy.types.Operator):
                 edges=EdgesToSubdivide,
                 cuts=Cuts)
 
-        #Create Original Verts List - VertsOriginal
+        #Create Original Verts List - 'VertsOriginal'
         SubVert = [ele for ele in EdgeSubdivided["geom_split"]
                            if isinstance(ele, bmesh.types.BMVert)]                   
         VertsOriginal = [v for v in BMesh.verts if v not in SubVert]
 
-        #Create Lists 'EdgesSelected' and 'VertsSubdiv'
+        #Create 'EdgesSelected' and 'VertsSubdiv'
         EdgesSelect = [ele for ele in EdgeSubdivided["geom"]
                            if isinstance(ele, bmesh.types.BMEdge)]  
         VertsSubdiv = list({v for e in EdgesSelect for v in e.verts})
