@@ -146,13 +146,11 @@ class BASIC_OT_bmeshRainDirt(bpy.types.Operator):
                 BMesh,
                 edges=EdgesToExtrude,
                 use_select_history = True)
-
+                
+        #Get list 'EdgesSelected' from 'ExtrudedEdges'
         EdgesSelected = [ele for ele in ExtrudedEdges["geom"]
                            if isinstance(ele, bmesh.types.BMEdge)]
 
-        #Get Faces from extruded Edges and Flip (if necessary)
-        Faceselected = [ele for ele in ExtrudedEdges["geom"]
-                           if isinstance(ele, bmesh.types.BMFace)]
 
         #Get Verts from extruded Edges
         VertsSelect = [ele for ele in ExtrudedEdges["geom"]
