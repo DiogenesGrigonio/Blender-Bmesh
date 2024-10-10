@@ -4,7 +4,7 @@
 import bpy, bmesh, random, math
 
 class BASIC_OT_bmeshRainDirt(bpy.types.Operator):
-    """Creat an object for use in Amb Calculation"""
+    """Create an object for use in Dirt Calculation"""
     bl_idname = "basic.rain_dirt"
     bl_label = "Rain Dirt"
     bl_options = {"REGISTER", "UNDO"}
