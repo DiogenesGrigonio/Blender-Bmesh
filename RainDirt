@@ -18,8 +18,7 @@ class BASIC_OT_bmeshRainDirt(bpy.types.Operator):
     cuts = bpy.props.IntProperty(
             name="Cuts",
             default=50,
-            min=1,
-            description="cuts")
+            min=1)
 
     amount = bpy.props.IntProperty(
             name="Amount",
@@ -73,8 +72,8 @@ class BASIC_OT_bmeshRainDirt(bpy.types.Operator):
 
         EdgeSubdivided = bmesh.ops.subdivide_edges(
                 BMesh,
-                edges = EdgesToSubdivide,
-                cuts = Cuts)
+                edges=EdgesToSubdivide,
+                cuts=Cuts)
 
         #Create Original Verts List - VertsOriginal
         SubVert = [ele for ele in EdgeSubdivided["geom_split"]
@@ -90,7 +89,7 @@ class BASIC_OT_bmeshRainDirt(bpy.types.Operator):
         ExtrudeEdgeOnly = bmesh.ops.extrude_edge_only(    
                 BMesh,
                 edges=EdgesSelect,
-                use_select_history = True)
+                use_select_history=True)
 
         #Translate vertices in 'VertsSubdiv'
         for Vert in VertsSubdiv:
@@ -113,7 +112,7 @@ class BASIC_OT_bmeshRainDirt(bpy.types.Operator):
         if self.invert_distance:
             bmesh.ops.reverse_faces(
                         BMesh, 
-                        faces = Faces)
+                        faces=Faces)
 
         #Get Edges List - 'EdgesToExtrude',  from Vert List - 'VertsSubdiv'
         for v in VertsSubdiv:v.select = True
@@ -145,7 +144,7 @@ class BASIC_OT_bmeshRainDirt(bpy.types.Operator):
         ExtrudedEdges = bmesh.ops.extrude_edge_only(    
                 BMesh,
                 edges=EdgesToExtrude,
-                use_select_history = True)
+                use_select_history=True)
                 
         #Get list 'EdgesSelected' from 'ExtrudedEdges'
         EdgesSelected = [ele for ele in ExtrudedEdges["geom"]
