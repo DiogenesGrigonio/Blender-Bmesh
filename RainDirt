@@ -3,6 +3,7 @@
 
 import bpy, bmesh, random, math
 
+
 class BASIC_OT_bmeshRainDirt(bpy.types.Operator):
     """Create an object for use in Dirt Calculation"""
     bl_idname = "basic.rain_dirt"
@@ -65,6 +66,7 @@ class BASIC_OT_bmeshRainDirt(bpy.types.Operator):
 
         #Subdivide selected Edges
         EdgesToSubdivide = [edge for edge in BMesh.edges if edge.select]
+
         bmesh.ops.split_edges(
             BMesh, 
             edges=EdgesToSubdivide)
@@ -104,9 +106,14 @@ class BASIC_OT_bmeshRainDirt(bpy.types.Operator):
                     vec=(   Vert.normal[0]/12*Distance, 
                             Vert.normal[1]/12*Distance, 
                             0))
-        #Get Faces List
+
+        #Get Faces and Flip (if necessary)
         Faces = [ele for ele in ExtrudeEdgeOnly["geom"]
                            if isinstance(ele, bmesh.types.BMFace)]
+        if self.invert_distance:
+            bmesh.ops.reverse_faces(
+                        BMesh, 
+                        faces = Faces)
 
         #Get Edges List - 'EdgesToExtrude',  from Vert List - 'VertsSubdiv'
         for v in VertsSubdiv:v.select = True
@@ -143,11 +150,9 @@ class BASIC_OT_bmeshRainDirt(bpy.types.Operator):
         EdgesSelected = [ele for ele in ExtrudedEdges["geom"]
                            if isinstance(ele, bmesh.types.BMEdge)]
 
-        #Get Faces from extruded Edges and Update List 'Face'
+        #Get Faces from extruded Edges and Flip (if necessary)
         Faceselected = [ele for ele in ExtrudedEdges["geom"]
                            if isinstance(ele, bmesh.types.BMFace)]
-        Faces.extend(Faceselected)
-        Faces = [f for f in Faces if f.is_valid]
 
         #Get Verts from extruded Edges
         VertsSelect = [ele for ele in ExtrudedEdges["geom"]
@@ -177,13 +182,6 @@ class BASIC_OT_bmeshRainDirt(bpy.types.Operator):
                         BMesh,
                         verts=[Vert],
                         vec=(NormalX, NormalY, EdgeHeight))
-
-        #Flip Normals
-        if self.invert_distance:
-            for Face in Faces:
-                bmesh.ops.reverse_faces(
-                        BMesh, 
-                        faces = [Face])
 
         #BMesh End
         BMesh.to_mesh(context.object.data)
