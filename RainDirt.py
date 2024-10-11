@@ -10,20 +10,31 @@ class BASIC_OT_bmeshRainDirt(bpy.types.Operator):
     bl_label = "Rain Dirt"
     bl_options = {"REGISTER", "UNDO"}
 
+    height = bpy.props.FloatProperty(
+            name="Height:",
+            default=0.25,
+            min=0.01,
+            subtype='DISTANCE')
+
     seed = bpy.props.IntProperty(
             name="Seed:",
             default=50,
             min=1)
 
-    height = bpy.props.FloatProperty(
-            name="Height:",
-            default=0.25,
-            min=0.01)
+    flip = bpy.props.BoolProperty(
+            name="Flip",
+            default=False)
 
     cuts = bpy.props.IntProperty(
             name="Cuts",
             default=50,
             min=1)
+
+    distance = bpy.props.FloatProperty(
+            name="Distance:",
+            default=0.19,
+            min=0.0,
+            subtype='DISTANCE')
 
     amount = bpy.props.IntProperty(
             name="Amount:",
@@ -31,24 +42,6 @@ class BASIC_OT_bmeshRainDirt(bpy.types.Operator):
             min=10,
             max=100,
             subtype='PERCENTAGE')
-
-    distance = bpy.props.FloatProperty(
-            name="Distance:",
-            default=1.9,
-            min=0.0)
-
-    height = bpy.props.FloatProperty(
-            name="Height:",
-            default=0.25,
-            min=0.01)
-
-    invert_distance = bpy.props.BoolProperty(
-            name="Invert",
-            default=False)
-
-    invert = bpy.props.BoolProperty(
-            name="Invert Drops",
-            default=False)
 
     @classmethod
     def poll(cls, context):
@@ -63,10 +56,9 @@ class BASIC_OT_bmeshRainDirt(bpy.types.Operator):
         #Variables
         Cuts = self.cuts
         Amount = 1 - (self.amount/100)
-        InvertDistance = -1 if self.invert_distance else 1
-        Distance = self.distance * InvertDistance/12
+        Flip = -1 if self.flip else 1
+        Distance = self.distance * Flip
         Height = -self.height
-        Invert = -1 if self.invert else 1
         
         #Subdivide selected Edges
         EdgesToSubdivide = [edge for edge in BMesh.edges if edge.select]
@@ -120,8 +112,8 @@ class BASIC_OT_bmeshRainDirt(bpy.types.Operator):
                             NormalY*Distance, 
                             0))
 
-        #Flip Faces (if necessary)
-        if self.invert_distance:
+        #Flip Faces
+        if self.flip:
             bmesh.ops.reverse_faces(
                         BMesh, 
                         faces=Faces)
@@ -141,16 +133,21 @@ class BASIC_OT_bmeshRainDirt(bpy.types.Operator):
             NonExtrudeEdges.append(RandomElement)
             del EdgesToExtrude[EdgesToExtrude.index(RandomElement)]
 
-        #Dissolve Vertices
-        VertsOn = list({v for e in BMesh.edges 
-                        if e in EdgesSelect 
-                        for v in e.verts})
+        #Dissolve Vertices - 'VertsOn':to keep list order
+        VertsOn = []
+        for item in [v for e in BMesh.edges 
+                    if e in EdgesSelect 
+                    for v in e.verts]:
+            if item not in VertsOn:VertsOn.append(item)
+            
         VertsOff = list({v for e in BMesh.edges 
                         if e in EdgesToExtrude 
                         for v in e.verts})
+
         Verts = [v for v in VertsOn 
                 if v not in VertsOff 
                 and v not in VertsOriginal]
+                
         bmesh.ops.dissolve_verts(BMesh, verts=Verts)
 
         #Extrude Edges
@@ -183,12 +180,13 @@ class BASIC_OT_bmeshRainDirt(bpy.types.Operator):
         #Translate extruded Edges
         for Edge in EdgesSelected:
             random.seed(self.seed+Edge.index)
-            EdgeHeight = Height*random.random()
+            EdgeRandom = random.random()
+            EdgeHeight = Height*EdgeRandom
             random.seed(self.seed+Edge.index+1)
             RandomLoc = random.random()
             for Vert in Edge.verts:
-                VertX = (NormalX/10)*RandomLoc*Invert
-                VertY = (NormalY/10)*RandomLoc*Invert
+                VertX = (NormalX/10)*RandomLoc*Flip
+                VertY = (NormalY/10)*RandomLoc*Flip
                 bmesh.ops.translate(
                         BMesh,
                         verts=[Vert],
