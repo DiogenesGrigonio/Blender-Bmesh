@@ -28,7 +28,7 @@ class BASIC_OT_bmeshRainDirt(bpy.types.Operator):
     cuts = bpy.props.IntProperty(
             name="Cuts",
             default=50,
-            min=1)
+            min=2)
 
     distance = bpy.props.FloatProperty(
             name="Distance:",
@@ -126,11 +126,9 @@ class BASIC_OT_bmeshRainDirt(bpy.types.Operator):
         BMesh.select_flush_mode()
 
         #Get random Edges
-        NonExtrudeEdges = []
         for i in range(int(len(EdgesToExtrude)*Amount)):
             random.seed(self.seed+i)
             RandomElement = random.choice(EdgesToExtrude)
-            NonExtrudeEdges.append(RandomElement)
             del EdgesToExtrude[EdgesToExtrude.index(RandomElement)]
 
         #Dissolve Vertices - 'VertsOn':to keep list order
@@ -180,8 +178,7 @@ class BASIC_OT_bmeshRainDirt(bpy.types.Operator):
         #Translate extruded Edges
         for Edge in EdgesSelected:
             random.seed(self.seed+Edge.index)
-            EdgeRandom = random.random()
-            EdgeHeight = Height*EdgeRandom
+            EdgeHeight = Height*random.random()
             random.seed(self.seed+Edge.index+1)
             RandomLoc = random.random()
             for Vert in Edge.verts:
