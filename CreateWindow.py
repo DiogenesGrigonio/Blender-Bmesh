@@ -12,7 +12,7 @@ class BASIC_OT_bmeshCreateWindow(bpy.types.Operator):
     
     amount_light = bpy.props.IntProperty(
             name="Amount Light:",
-            default=25,
+            default=40,
             min=10,
             max=100,
             subtype='PERCENTAGE')
@@ -34,10 +34,24 @@ class BASIC_OT_bmeshCreateWindow(bpy.types.Operator):
             default=0.35,
             min=0.25,
             subtype='DISTANCE')
+
+    curt_low = bpy.props.FloatProperty(
+            name="Curtain Low:",
+            default=0.07,
+            min=0.0001,
+            step=1,
+            precision=3)
+            
+    curt_up = bpy.props.FloatProperty(
+            name="Curtain Up:",
+            default=0.08,
+            min=0.0001,
+            step=1,
+            precision=3)
             
     resolution = bpy.props.IntProperty(
             name="Resolution Curtain:",
-            default=6,
+            default=12,
             min=2, 
             max=18)
 
@@ -61,19 +75,17 @@ class BASIC_OT_bmeshCreateWindow(bpy.types.Operator):
         SelfSeed = self.seed
 
         #Get Materials
-        Mat = context.object.data.materials
+        GetMat = context.object.data.materials
         Name = context.object.name.split(':')[0]
-        Mat.append(data.materials[Name+":thin_RAY.002_DRV"])
-        Mat.append(data.materials["001.non_material.000"])
-        Mat.append(data.materials[Name+":luz_INTERNA.01"])
-        Mat.append(data.materials[Name+":luz_INTERNA.02"])
-        Mat.append(data.materials[Name+":luz_INTERNA.03"])
-        Mat.append(data.materials["001.curtain.000"])
+        Material = [[Name+":thin_RAY.002_DRV"],["001.non_material.000"],
+                    [Name+":luz_INTERNA.01"], [Name+":luz_INTERNA.02"], 
+                    [Name+":luz_INTERNA.03"], ["001.curtain.000"]]
+        for mat in Material:
+            GetMat.append(data.materials[mat[0]])
         
         #Create BlackBox
         Faces = [f for f in BMesh.faces]
         for f in Faces:f.copy(verts=True, edges=True)
-
         NewFaces = bmesh.ops.extrude_discrete_faces(
                 BMesh,
                 faces = Faces)
@@ -87,11 +99,12 @@ class BASIC_OT_bmeshCreateWindow(bpy.types.Operator):
                     vec = (-NormalX, -NormalY, 0),
                     verts = [vert])
 
-        #Apply Material in BlackBox
+        #Apply Material (BlackBox)
         BMesh.select_mode = {'EDGE'}
         for face in NewFaces['faces']:
             for vert in face.verts:
                 for edge in vert.link_edges:edge.select_set(True)
+
         BMesh.select_flush(True)
         BlackBoxFaces = [face for face in BMesh.faces if face.select]
         for face in BlackBoxFaces:face.material_index = 1
@@ -122,12 +135,13 @@ class BASIC_OT_bmeshCreateWindow(bpy.types.Operator):
                 DirL = VerticesZ[1].co - VerticesZ[0].co
                 
                 VertX = VerticesZ[0].co[0]
+            
                 if round(DirL[1], 3)>=0:
                     VertY = min([VerticesZ[0].co[1], VerticesZ[1].co[1]])
                 else:
                     VertY = max([VerticesZ[0].co[1], VerticesZ[1].co[1]])
+                    
                 VertZ = VerticesZ[0].co[2]-0.01
-
                 Vert0Co = [VertX, VertY, VertZ]
                 VertCurtainLow = []
                 VertCurtainHigh = []
@@ -137,14 +151,15 @@ class BASIC_OT_bmeshCreateWindow(bpy.types.Operator):
                     V = i['vert'][0]
                     VertCurtainLow.append(V)
 
-                Loc=1/24
+                CurtLow=self.curt_low/20
                 for v in VertCurtainLow[1:]:
                     bmesh.ops.translate(
                         BMesh, verts = [v], 
-                        vec=(DirL[0]*Loc, 
-                        DirL[1]*Loc, 0)
+                        vec=(DirL[0]*CurtLow, 
+                        DirL[1]*CurtLow, 0)
                         )
-                    Loc+=random.uniform(1/24, 2/12)
+                    CurtLow+=random.uniform(0.001, CurtLow)
+
                 for v in VertCurtainLow:
                     bmesh.ops.translate(
                         BMesh, 
@@ -154,19 +169,18 @@ class BASIC_OT_bmeshCreateWindow(bpy.types.Operator):
                             0))
 
                 Vert0Co[2] = VertZ+SizeZ+0.01
-
                 for i in range(CurtainResol):
                     i = bmesh.ops.create_vert(BMesh,co=Vert0Co)
                     V = i['vert'][0]
                     VertCurtainHigh.append(V)
 
-                Loc=1/24
+                CurtUp=self.curt_up/20
                 for v in VertCurtainHigh[1:]:
                     bmesh.ops.translate(
                         BMesh, 
                         verts = [v], 
-                        vec=(DirL[0]*Loc, DirL[1]*Loc, 0))
-                    Loc+=random.uniform(1/24, 2/12)
+                        vec=(DirL[0]*CurtUp, DirL[1]*CurtUp, 0))
+                    CurtUp+=random.uniform(0.001, CurtUp)
                     
                 for v in VertCurtainHigh:
                     bmesh.ops.translate(
@@ -176,9 +190,6 @@ class BASIC_OT_bmeshCreateWindow(bpy.types.Operator):
                             -NorY*random.uniform(0.01, Thick/3.5), 
                             0))
 
-                VertsCurtain.extend(VertCurtainHigh)
-                VertsCurtain.extend(VertCurtainLow)
-
                 for i in range(CurtainResol-1):
                     face = BMesh.faces.new([
                                     VertCurtainLow[0+i], 
@@ -187,7 +198,9 @@ class BASIC_OT_bmeshCreateWindow(bpy.types.Operator):
                                     VertCurtainHigh[0+i]])
                     FacesCurtain.append(face)
 
-        #Apply Material and Smooth in Curtains
+                VertsCurtain.extend(VertCurtainHigh+VertCurtainLow)
+
+        #Apply Material and Smooth (Curtains)
         for face in FacesCurtain:
             face.material_index = 5
             face.smooth = True
@@ -199,7 +212,6 @@ class BASIC_OT_bmeshCreateWindow(bpy.types.Operator):
             del Faces[Faces.index(RandomElement)]
             
         for f in Faces:f.copy(verts=True, edges=True)
-
         for Face in Faces:
             NormalX = Face.normal[0]*Thick/3
             NormalY = Face.normal[1]*Thick/3
@@ -209,7 +221,7 @@ class BASIC_OT_bmeshCreateWindow(bpy.types.Operator):
                     vec = (-NormalX, -NormalY, 0),
                     verts = [vert])
 
-        #Apply Materials in Light INT
+        #Apply Materials (Light INT)
         for Face in Faces:Face.material_index = 2
         for Face in Faces[::2]:Face.material_index = 3
         for Face in Faces[::3]:Face.material_index = 4
@@ -220,7 +232,6 @@ class BASIC_OT_bmeshCreateWindow(bpy.types.Operator):
                     and f not in BlackBoxFaces]
                     
         BMesh.verts.ensure_lookup_table()
-        
         VertsGlass=[]
         for face in FaceGlass:
             for v in face.verts:
