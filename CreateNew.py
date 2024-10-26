@@ -6,7 +6,7 @@ from .bmesh_ops import unselect_all, select_el
 
 
 class BASIC_OT_bmeshCreateVerticaL(bpy.types.Operator):
-    """Create an object for each Vertical Face using Matrices"""
+    """Create an object for each Face"""
     bl_idname = "basic.create_vertical"
     bl_label = "Create New"
     bl_options = {"REGISTER", "UNDO"}
@@ -49,15 +49,13 @@ class BASIC_OT_bmeshCreateVerticaL(bpy.types.Operator):
         return ob and ob.type == 'MESH' and context.mode == 'OBJECT'
     
     def execute(self, context):
-
         #variables
-        """FacePoint in {'XZ', 'X-Z', '-XZ', '-X-Z', 'CENTERZ', 'CENTER-Z', 'CENTER'}"""
         FacePoint = self.point
         OffSet = self.off_set
         VertScale = self.scale
         Rotate = self.rotate/45
         VertMesh = []
-        
+
         #BMesh Start
         BMesh = bmesh.new()
         BMesh.from_mesh(context.object.data)
@@ -139,10 +137,8 @@ class BASIC_OT_bmeshCreateVerticaL(bpy.types.Operator):
             Matrix = MatrixLocation * MatrixRotation * MatrixScale
             ObjectMatrix = context.object.matrix_basis
 
-            #Create
-            VertObject = []
-
-            VertCreate = bmesh.ops.create_cone(
+            #Create and Transform by Matrix
+            ret = bmesh.ops.create_cone(
                                 BMesh,
                                 cap_ends=False,
                                 cap_tris=True,
@@ -152,8 +148,8 @@ class BASIC_OT_bmeshCreateVerticaL(bpy.types.Operator):
                                 depth=0.5,
                                 matrix=ObjectMatrix)
 
-            VertMesh.extend(VertCreate['verts'])
-            VertObject.extend(VertCreate['verts'])
+            VertMesh.extend(ret['verts'])
+            VertObject = ret['verts']
             
             bmesh.ops.transform(
                                 BMesh, 
