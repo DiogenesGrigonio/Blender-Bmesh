@@ -134,10 +134,10 @@ class BASIC_OT_bmeshCreateVerticaL(bpy.types.Operator):
             RotationZ = RotationZ.to_matrix().to_4x4()
             MatrixRot = NormalOut.to_track_quat('-Z', 'Y')
             MatrixRot = MatrixRot.to_matrix().to_4x4()
-            MatrixRotation = MatrixRot * RotationZ
+            MatrixRotation = MatrixRot*RotationZ
 
             #Matrices
-            Matrix = MatrixLocation * MatrixRotation * MatrixScale
+            Matrix = MatrixLocation*MatrixRotation*MatrixScale
             ObjectMatrix = context.object.matrix_basis
 
             #Create and Transform by Matrix
