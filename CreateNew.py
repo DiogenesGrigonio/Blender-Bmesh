@@ -6,7 +6,9 @@ from .bmesh_ops import unselect_all, select_el
 
 
 class BASIC_OT_bmeshCreateVerticaL(bpy.types.Operator):
-    """Create an object for each Face"""
+    """Create an object for each Vertical Face 
+    using Matrices and applying Rotation Control 
+    in Z Local Axis"""
     bl_idname = "basic.create_vertical"
     bl_label = "Create New"
     bl_options = {"REGISTER", "UNDO"}
@@ -128,9 +130,10 @@ class BASIC_OT_bmeshCreateVerticaL(bpy.types.Operator):
 
             #Matrix Rotation
             NormalOut = Face.normal
-            RotationZ = mathutils.Euler((0, 0, Rotate), 'XYZ').to_quaternion().to_matrix().to_4x4()
-            Direction = NormalOut.to_track_quat('-Z', 'Y')
-            MatrixRot = Direction.to_matrix().to_4x4()
+            RotationZ = mathutils.Euler((0, 0, Rotate), 'XYZ').to_quaternion()
+            RotationZ = RotationZ.to_matrix().to_4x4()
+            MatrixRot = NormalOut.to_track_quat('-Z', 'Y')
+            MatrixRot = MatrixRot.to_matrix().to_4x4()
             MatrixRotation = MatrixRot * RotationZ
 
             #Matrices
