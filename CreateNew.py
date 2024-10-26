@@ -6,7 +6,9 @@ from .bmesh_ops import unselect_all, select_el
 
 
 class BASIC_OT_bmeshCreateVerticaL(bpy.types.Operator):
-    """Create an object for each Face"""
+    """Create an object for each Vertical Face 
+    using Matrices and applying Rotation Control 
+    in Z Local Axis"""
     bl_idname = "basic.create_vertical"
     bl_label = "Create New"
     bl_options = {"REGISTER", "UNDO"}
