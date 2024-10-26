@@ -1,8 +1,7 @@
 # GPL # (c) 2024 Diogenes Grigonio
 # mesh operator
 
-import bpy, bmesh, random, math, mathutils
-from .bmesh_ops import unselect_all, select_el
+import bpy, bmesh, random, mathutils
 
 
 class BASIC_OT_bmeshCreateVerticaL(bpy.types.Operator):
@@ -159,9 +158,6 @@ class BASIC_OT_bmeshCreateVerticaL(bpy.types.Operator):
 
             VertMesh.extend(ret['verts'])
             del ret
-
-        #Select Created
-        select_el(BMesh, VertMesh)
 
         #BMesh End
         BMesh.to_mesh(context.object.data)
