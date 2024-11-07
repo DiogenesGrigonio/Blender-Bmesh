@@ -10,4 +10,7 @@ CreateWindow Instructions:
 CreateNew Demo:
 [https://youtu.be/b8AxV2qN6lo](https://youtu.be/b8AxV2qN6lo)
 
+CreatePot Demo:
+[https://youtu.be/konDdWOhadY](https://youtu.be/konDdWOhadY?si=WcNlE2HyiCzDxubq)
+
 ![CreateWindow](https://github.com/user-attachments/assets/ce6301ba-9aec-4cf2-a6d5-c9af897b1cab)
