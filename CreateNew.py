@@ -4,7 +4,7 @@
 import bpy, bmesh, random, mathutils
 
 
-class BASIC_OT_bmeshCreateVerticaL(bpy.types.Operator):
+class BASIC_OT_bmeshCreateVertical(bpy.types.Operator):
     """Create an object for each Vertical Face 
     using Matrices and applying Rotation Control 
     in Z Local Axis"""
@@ -23,11 +23,13 @@ class BASIC_OT_bmeshCreateVerticaL(bpy.types.Operator):
 
     rotate = bpy.props.FloatProperty(
             name="Rotate:",
-            default=0.0)
+            default=0.0,
+            subtype='ANGLE', 
+            unit='ROTATION')
             
     resolution = bpy.props.IntProperty(
             name="Resolution:",
-            default=6,
+            default=4,
             min=2, 
             max=24)
 
@@ -54,7 +56,7 @@ class BASIC_OT_bmeshCreateVerticaL(bpy.types.Operator):
         FacePoint = self.point
         OffSet = self.off_set
         VertScale = self.scale
-        Rotate = self.rotate/45
+        Rotate = self.rotate
         VertMesh = []
 
         #BMesh Start
@@ -128,12 +130,12 @@ class BASIC_OT_bmeshCreateVerticaL(bpy.types.Operator):
             MatrixScale = MatrixScaleX*MatrixScaleY*MatrixScaleZ
 
             #Matrix Rotation
-            NormalOut = Face.normal
             RotationZ = mathutils.Euler((0, 0, Rotate), 'XYZ').to_quaternion()
             RotationZ = RotationZ.to_matrix().to_4x4()
-            MatrixRot = NormalOut.to_track_quat('-Z', 'Y')
-            MatrixRot = MatrixRot.to_matrix().to_4x4()
-            MatrixRotation = MatrixRot*RotationZ
+            NormalOut = Face.normal
+            FaceRot = NormalOut.to_track_quat('-Z', 'Y')
+            FaceRot = FaceRot.to_matrix().to_4x4()
+            MatrixRotation = FaceRot*RotationZ
 
             #Matrices
             Matrix = MatrixLocation*MatrixRotation*MatrixScale
